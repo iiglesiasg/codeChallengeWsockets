@@ -2,18 +2,16 @@
 
 image:https://img.shields.io/badge/vert.x-3.9.4-purple.svg[link="https://vertx.io"]
 
-This application was generated using http://start.vertx.io
+This application was generated using http://start.vertx.io and I will keep asciidoc, in markdown extension detriment, to honor Vertx starter which actually helps setting up the gradle plugins and tasks.
 
 == Building
 
-To launch your tests:
-```
-./gradlew clean test
-```
+Vertx starter provides us with a gradle wrapper. So I recommend using it to run building tasks so we all share the same gradle settings.
 
-To package your application:
+To package your application, the simples way is the use of Jonh Engelman's shadow plugin, provided by vertx starter and broadly used, this plugin is responsible for packaging the java classes into a single binary called the FatJar. This is not ideally for security and performance reasons but it is the easiest and fastest way to package a Java microservice.
 ```
-./gradlew clean assemble
+./gradlew clean shadowJar
+
 ```
 
 To run your application:
@@ -21,11 +19,77 @@ To run your application:
 ./gradlew clean run
 ```
 
-== Help
+But once the app has been packaged as FatJar, we can also avoid starting gradle daemons and simply run:
+```
+java -jar build/libs/Server-1.0.0-SNAPSHOT-fat.jar
+```
+Beware of java 11 runing environment requirement.
 
-* https://vertx.io/docs/[Vert.x Documentation]
-* https://stackoverflow.com/questions/tagged/vert.x?sort=newest&pageSize=15[Vert.x Stack Overflow]
-* https://groups.google.com/forum/?fromgroups#!forum/vertx[Vert.x User Group]
-* https://gitter.im/eclipse-vertx/vertx-users[Vert.x Gitter]
+== WebServer design
+=== Vertx Verticle Class
+Vertx require some conventions in the way it initializes. Every Vertx application contains at least one Verticle which holds the event loop that is used internally for the asynchronous threads management.
 
+[source,java]
+-----------------
+public class MainVerticle extends AbstractVerticle {
 
+public static void main(String args[]) {
+    Vertx vertx = Vertx.vertx();
+    vertx.deployVerticle(new MainVerticle());
+  }
+
+  @Override
+  public void start(Promise<Void> startPromise) throws Exception {
+-----------------
+
+=== Writing the file
+Once again Vertx cames to the rescue making it easy to pipe streams. Using the AsyncFile Writer Stream the goal should be to pipe the socket readStream to the file WriteStream. I will cover this later.
+
+There is a consideration for the challenge. The file have to be reinitialized or blanked everytime the server starts up.
+[source,java]
+-----------------
+  private void startChallenge(Vertx vertx) {
+    vertx.fileSystem().delete("numbers.log", delete -> {
+      if (delete.succeeded()) {
+        System.out.println("File numbers.log deleted");
+        vertx.fileSystem().open(...
+      } else {
+        System.out.println("Failed to delete ");
+        vertx.fileSystem().open(...
+      }
+-----------------
+
+=== HTTP Server and Socket Handlers
+Vertx is an event-driven toolkit, that means that it provides you utilities to handle diferent kind of events. The ones we want are websocket events over a HTTP server.
+
+Creating the server is straight forward as I won't consider any security capabilities nor http protocols.
+Something as simple as this lines should be enough
+[source,java]
+-----------------
+  private void startServer(Vertx vertx) {
+    HttpServer server = vertx.createHttpServer(options);
+    server.webSocketHandler(ws -> { // Handles Socket connections (After an update request)
+      ws.textMessageHandler(message -> { // Handles websockets incoming messages
+-----------------
+=== Data Structures
+For the challenge's "bussinnes logic" I need to store the digits inside a data structure. The digits came as a 9 character String with 0's as left pad. Otherwise the connection is closed. Computationally the fastest comparator is comparing integers, so if I want to compare if an arriving digits has been processed before I better store the digits as Integers. Moreover, 9 digits are many possible numbers so I need a list that grows in size dinamically, at least is something I would not like to tune.
+
+There is another consideration for choosing the right data structure. Searching algorithm. Usually a linear search is enought for a good performance, but in this challenge the ammount of stored numbers can grow up to millions, and a linear search over 70M is non-sense, with significant impact on the performance. Thats why I need a data structure that allows me to do a binary search. Binary search works over ordered lists, and in Java 11 the data structure that fills my requirements seems te be a *SortedSet<Integer>*
+
+With a small impact on adding new elements to the list, as they are stored in a sort manner, the search response is highly improved.
+
+=== Non-Blocking and BackPressure
+For each incomming message I need to validate and proccess it. I need those validations to be run on a non-blocking manner so the thread can continue processing incomming websocket messages. Once the validation is done, if it proceeds, the Thread will be tell to trigger the next async function which is writing to the file over the previosly opened File-WriteStream.
+
+Writing to a file is expected to be much slower than the websocket throughtput, and that will cause the WritingQueue getting full with a catastrophic OOM and the consequent data-loss. To avoid that we need to implement the pump paradigm, also known as back-pressure.
+[source,java]
+-----------------
+if (file.writeQueueFull()) {
+  ws.pause(); // pause websocket
+  file.drainHandler(done -> { // Triggers when the WriteQueue is no longer full
+    ws.resume(); // resume websocket
+  });
+-----------------
+Now our Server is resilient and aware of dataloss. In other words, dataloss in no longer a concern from the server side but for the client which should have in mind a circuit-breaker approach to prevent data from been lost.
+
+Unfortunately, having a file as a backend dont let us scale our server horizontaly.
