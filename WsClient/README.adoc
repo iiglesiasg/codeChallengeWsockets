@@ -2,14 +2,9 @@
 
 image:https://img.shields.io/badge/vert.x-3.9.4-purple.svg[link="https://vertx.io"]
 
-This application was generated using http://start.vertx.io
+This application was generated using http://start.vertx.io and I will keep asciidoc, in markdown extension detriment, to honor Vertx starter which actually helps setting up the gradle plugins and tasks.
 
 == Building
-
-To launch your tests:
-```
-./gradlew clean test
-```
 
 To package your application:
 ```
@@ -20,12 +15,36 @@ To run your application:
 ```
 ./gradlew clean run
 ```
+== Vertx cli
+Vertx has a cli called vertx shell which I found quite interesting. It makes it easy to form a clustered application of Vertx Microservices with a shared service bus, quite fancy. You can use it to start 5 instances of the WebSocket client.
+```
+vertx run src/main/java/com/nrelic/MainVerticle.java --instances 5
+```
 
-== Help
-
-* https://vertx.io/docs/[Vert.x Documentation]
-* https://stackoverflow.com/questions/tagged/vert.x?sort=newest&pageSize=15[Vert.x Stack Overflow]
-* https://groups.google.com/forum/?fromgroups#!forum/vertx[Vert.x User Group]
-* https://gitter.im/eclipse-vertx/vertx-users[Vert.x Gitter]
-
-
+== WsClient Design
+Straight forward. Create basic HTTP client. Request websocket connection.
+[source,java]
+-----------------
+HttpClient client = vertx.createHttpClient(options);
+// socket message sender
+client.webSocket("/", sock -> {
+    if (sock.succeeded()) {
+        System.out.println("Connected socket");
+        WebSocket socket = sock.result();
+        ...
+-----------------
+=== Infinite loop in Vertx
+Vertx it is not intended to execute blocking code. It always expects an event as input. Since the Vertx Periodic task can only be scheduled in milliseconds magnitudes and as we want to be in nanoseconds magnitudes, we have to make a workaround.
+Executing an infinite loop in Vertx require us to encapsulate the code in a special manner. Notice that this is intended to be a massive load generator. As we already know that the server will pause the socket for backpressure, from the client side prespective the socket writing queue will also get eventually full. On a real case scenario a circuit-breaker will be recommended.
+[source,java]
+-----------------
+// As there is no input stream but an infinite loop we have to cheat vertX with a blocking piece of code.
+vertx.executeBlocking(promise -> {
+  while (true) {
+    // Only send if the queue is not full.
+    if (!socket.writeQueueFull()) {
+      Future.<String>future(f -> // Generate ramdom 9 digits with left pad
+        f.complete(String.format("%09d", VertxContextPRNG.current(vertx).nextInt(1000000000)))
+      ).onComplete(number -> socket.writeTextMessage(number.result()));
+    }
+-----------------

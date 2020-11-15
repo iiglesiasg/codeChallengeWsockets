@@ -18,7 +18,6 @@ public class MainVerticle extends AbstractVerticle {
   public void start(Promise<Void> startPromise) throws Exception {
     HttpClientOptions options = new HttpClientOptions().setDefaultPort(4000).setDefaultHost("localhost");
     HttpClient client = vertx.createHttpClient(options).connectionHandler(connect -> {
-      System.out.println("Connected");
       connect.exceptionHandler(ex -> {
         System.out.println("Exception");
         ex.printStackTrace();
@@ -31,7 +30,7 @@ public class MainVerticle extends AbstractVerticle {
     // socket message sender
     client.webSocket("/", sock -> {
       if (sock.succeeded()) {
-        System.out.println("Connected");
+        System.out.println("Connected socket");
         WebSocket socket = sock.result();
 
         // As there is no input stream but an infinite loop we have to cheat vertX with a blocking piece of code.
