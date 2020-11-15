@@ -16,7 +16,7 @@ To run your application:
 ./gradlew clean run
 ```
 == Vertx cli
-Vertx has a cli called vertx shell which I found quite interesting. It makes it easy to form a clustered application of Vertx Microservices with a shared service bus, quite fancy. You can use it to start 5 instances of the WebSocket client.
+Vertx has a cli called https://vertx.io/docs/vertx-shell/java/[vertx shell] which I found quite interesting. It makes it easy to form a clustered application of Vertx Microservices with a shared service bus, quite fancy. You can use it to start 5 instances of the WebSocket client.
 ```
 vertx run src/main/java/com/nrelic/MainVerticle.java --instances 5
 ```
