@@ -8,7 +8,7 @@ This application was generated using http://start.vertx.io and I will keep ascii
 
 Vertx starter provides us with a gradle wrapper. So I recommend using it to run building tasks so we all share the same gradle settings.
 
-To package your application, the simples way is the use of Jonh Engelman's shadow plugin, provided by vertx starter and broadly used, this plugin is responsible for packaging the java classes into a single binary called the FatJar. This is not ideally for security and performance reasons but it is the easiest and fastest way to package a Java microservice.
+To package your application, the simplest way is the use of Jonh Engelman's shadow plugin, provided by vertx starter and broadly used, this plugin is responsible for packaging the java classes into a single binary called the FatJar. This is not ideal for security and performance reasons but it is the easiest and fastest way to package a Java microservice.
 ```
 ./gradlew clean shadowJar
 
@@ -23,11 +23,11 @@ But once the app has been packaged as FatJar, we can also avoid starting gradle 
 ```
 java -jar build/libs/Server-1.0.0-SNAPSHOT-fat.jar
 ```
-Beware of java 11 runing environment requirement.
+Beware of java 11 running environment requirement.
 
 == WebServer design
 === Vertx Verticle Class
-Vertx require some conventions in the way it initializes. Every Vertx application contains at least one Verticle which holds the event loop that is used internally for the asynchronous threads management.
+Vertx requires some conventions in the way it initializes. Every Vertx application contains at least one Verticle which holds the event loop that is used internally for the asynchronous threads management.
 
 [source,java]
 -----------------
@@ -43,9 +43,9 @@ public static void main(String args[]) {
 -----------------
 
 === Writing the file
-Once again Vertx cames to the rescue making it easy to pipe streams. Using the AsyncFile Writer Stream the goal should be to pipe the socket readStream to the file WriteStream. I will cover this later.
+Once again Vertx comes to the rescue making it easy to pipe streams. Using the AsyncFile Writer Stream the goal should be to pipe the socket readStream to the file WriteStream. I will cover this later.
 
-There is a consideration for the challenge. The file have to be reinitialized or blanked everytime the server starts up.
+There is a consideration for the challenge. The file has to be reinitialized or blanked every time the server starts up.
 [source,java]
 -----------------
   private void startChallenge(Vertx vertx) {
@@ -60,10 +60,10 @@ There is a consideration for the challenge. The file have to be reinitialized or
 -----------------
 
 === HTTP Server and Socket Handlers
-Vertx is an event-driven toolkit, that means that it provides you utilities to handle diferent kind of events. The ones we want are websocket events over a HTTP server.
+Vertx is an event-driven toolkit, which means that it provides you utilities to handle different kinds of events. The ones we want are WebSocket events over an HTTP server.
 
-Creating the server is straight forward as I won't consider any security capabilities nor http protocols.
-Something as simple as this lines should be enough
+Creating the server is straight forward as I won't consider any security capabilities nor HTTP protocols.
+Something as simple as these lines should be enough
 [source,java]
 -----------------
   private void startServer(Vertx vertx) {
@@ -72,16 +72,16 @@ Something as simple as this lines should be enough
       ws.textMessageHandler(message -> { // Handles websockets incoming messages
 -----------------
 === Data Structures
-For the challenge's "bussinnes logic" I need to store the digits inside a data structure. The digits came as a 9 character String with 0's as left pad. Otherwise the connection is closed. Computationally the fastest comparator is comparing integers, so if I want to compare if an arriving digits has been processed before I better store the digits as Integers. Moreover, 9 digits are many possible numbers so I need a list that grows in size dinamically, at least is something I would not like to tune.
+For the challenge's "business logic" I need to store the digits inside a data structure. The digits came as a 9 character string with 0's as left pad. Otherwise, the connection is closed. Computationally the fastest comparator is comparing integers, so if I want to compare if arriving digits have been processed before I better store the digits as Integers. Moreover, 9 digits are many possible numbers so I need a list that grows in size dynamically, at least is something I would not like to tune.
 
-There is another consideration for choosing the right data structure. Searching algorithm. Usually a linear search is enought for a good performance, but in this challenge the ammount of stored numbers can grow up to millions, and a linear search over 70M is non-sense, with significant impact on the performance. Thats why I need a data structure that allows me to do a binary search. Binary search works over ordered lists, and in Java 11 the data structure that fills my requirements seems te be a *SortedSet<Integer>*
+There is another consideration for choosing the right data structure. Searching algorithm. Usually, a linear search is enough for a good performance, but in this challenge, the number of stored digits can grow up to millions, and a linear search over 70M is non-sense, with a significant impact on the performance. That's why I need a data structure that allows me to do a binary search. Binary search works over an ordered list, and in Java 11 the data structure that fills my requirements seems te be a *SortedSet<Integer>*
 
-With a small impact on adding new elements to the list, as they are stored in a sort manner, the search response is highly improved.
+With a small impact on adding new elements to the list, as they are stored in a sorted manner, the search response is highly improved.
 
 === Non-Blocking and BackPressure
-For each incomming message I need to validate and proccess it. I need those validations to be run on a non-blocking manner so the thread can continue processing incomming websocket messages. Once the validation is done, if it proceeds, the Thread will be tell to trigger the next async function which is writing to the file over the previosly opened File-WriteStream.
+For each incoming message, I need to validate and process it. I need those validations to be run in a non-blocking manner so the thread can continue processing incoming WebSocket messages. Once the validation is done, if it proceeds, the Thread will be told to trigger the next async function which is writing to the file over the previously opened File-WriteStream.
 
-Writing to a file is expected to be much slower than the websocket throughtput, and that will cause the WritingQueue getting full with a catastrophic OOM and the consequent data-loss. To avoid that we need to implement the pump paradigm, also known as back-pressure.
+Writing to a file is expected to be much slower than the WebSocket throughput, and that will cause the WritingQueue to become full with a catastrophic OOM and the consequent data-loss. To avoid that we need to implement the pump paradigm, also known as back-pressure.
 [source,java]
 -----------------
 if (file.writeQueueFull()) {
@@ -90,6 +90,18 @@ if (file.writeQueueFull()) {
     ws.resume(); // resume websocket
   });
 -----------------
-Now our Server is resilient and aware of dataloss. In other words, dataloss in no longer a concern from the server side but for the client which should have in mind a circuit-breaker approach to prevent data from been lost.
+Now our Server is resilient and aware of data loss. In other words, data loss is no longer a concern from the server side but for the client which should have in mind a circuit-breaker approach to prevent data from been lost.
 
-Unfortunately, having a file as a backend dont let us scale our server horizontaly.
+Unfortunately, having a file as a backend doesn't let us scale our server horizontally.
+
+=== Periodic Task
+Every ten seconds the server have to print the computation made during this 10seconds slot. Again, Vertx has its tool for scheduled tasks.
+[source,java]
+-----------------
+    // Scheduler (in miliseconds)
+    vertx.setPeriodic(10 * 1000, kk -> {
+      Future.future(f -> System.out.println("Received " + newDigits + " unique numbers, " + repeatedDigits + " duplicates. Unique Total: " + fileDigits.stream().count() + " Connections: " + connections));
+      newDigits = 0;
+      repeatedDigits = 0;
+    }); // End Scheduler
+-----------------
