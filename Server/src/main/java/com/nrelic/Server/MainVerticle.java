@@ -29,7 +29,7 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
-    //fileDigits = new ArrayList<Integer>();
+
     fileDigits = new TreeSet<Integer>();
     startChallenge(vertx);
 
@@ -41,27 +41,34 @@ public class MainVerticle extends AbstractVerticle {
     }); // End Scheduler
   }
 
+  // Everytime it boots it will delete and recreate the numbers.log file.
   private void startChallenge(Vertx vertx) {
-    /*
-        Everytime it boots it will delete and recreate the numbers.log file.
-        When ready
-    */
     vertx.fileSystem().delete("numbers.log", delete -> {
       if (delete.succeeded()) {
         System.out.println("File numbers.log deleted");
         vertx.fileSystem().open("numbers.log", new OpenOptions().setWrite(true).setCreate(true), openedFile());
-
       } else {
         System.out.println("Failed to delete ");
         vertx.fileSystem().open("numbers.log", new OpenOptions().setWrite(true).setCreate(true), openedFile());
       }
     });
+  }
 
-
+  // Get the File-Write-Stream and call start-server
+  private Handler<AsyncResult<AsyncFile>> openedFile() {
+    return event -> {
+      if (event.succeeded()) {
+        file = event.result();
+        System.out.println("File Created");
+        startServer(vertx);
+      } else {
+        System.out.println("Failed to Open/Create File");
+      }
+    };
   }
 
   private void startServer(Vertx vertx) {
-    HttpServerOptions options = new HttpServerOptions();
+    HttpServerOptions options = new HttpServerOptions().setMaxWebSocketMessageSize(9);
     HttpServer server = vertx.createHttpServer(options);
 
     // Handles new connections to the server
@@ -69,6 +76,7 @@ public class MainVerticle extends AbstractVerticle {
       if (connections == 5) {
         conn.close();
       } else connections++;
+
     });
 
     // Handles Socket connections (After an update request)
@@ -85,7 +93,7 @@ public class MainVerticle extends AbstractVerticle {
       // Handles websockets incoming messages
       ws.textMessageHandler(message -> {
 
-        // Future, Vertx Non blocking
+        // Future mades the code Non blocking
         Future.future(x -> {
           int intMessage = Integer.parseInt(message);
           if (message.length() == 9 && message.matches("\\d+")) {
@@ -113,7 +121,7 @@ public class MainVerticle extends AbstractVerticle {
                 ws.resume();
               });
             } // End Backpressure
-          });
+          }); // End Writing File
 
       }); // End TextMessage Handler
 
@@ -128,18 +136,5 @@ public class MainVerticle extends AbstractVerticle {
       });
   }
 
-  // As this code is called from 2 sources, it has his own function.
-  private Handler<AsyncResult<AsyncFile>> openedFile() {
-    return event -> {
-      if (event.succeeded()) {
-        file = event.result();
 
-        System.out.println("File Created");
-        startServer(vertx);
-
-      } else {
-        System.out.println("Failed to Open/Create File");
-      }
-    };
-  }
 }

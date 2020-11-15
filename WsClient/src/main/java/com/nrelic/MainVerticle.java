@@ -27,81 +27,25 @@ public class MainVerticle extends AbstractVerticle {
         System.out.println("Exited");
       });
     });
+
+    // socket message sender
     client.webSocket("/", sock -> {
       if (sock.succeeded()) {
         System.out.println("Connected");
         WebSocket socket = sock.result();
-        int milis=1000;
-        Boolean full = false;
-        vertx.executeBlocking(promise->{
+
+        // As there is no input stream but an infinite loop we have to cheat vertX with a blocking piece of code.
+        vertx.executeBlocking(promise -> {
           while (true) {
+            // Generate ramdom 9 digits with left pad
             String number = String.format("%09d", VertxContextPRNG.current(vertx).nextInt(1000000000));
-
-            socket.writeTextMessage(number);
-            while (socket.writeQueueFull()){
-              try {
-                Thread.sleep(1000);
-              } catch (InterruptedException e) {
-                e.printStackTrace();
-              }
-            }
+            // Only send if the queue is not full.
+            if (!socket.writeQueueFull()) socket.writeTextMessage(number);
           }
-        },res->System.out.println("Fin"));
-      }});
+        }, res -> System.out.println("Fin"));
 
-
-      /*  while (true) {
-          String number = String.format("%09d", VertxContextPRNG.current(vertx).nextInt(1000000000));
-
-          socket.writeTextMessage(number);
-
-          //  vertx.setPeriodic(1,every ->{
-       /*   String number = String.format("%09d", VertxContextPRNG.current(vertx).nextInt(1000000000));
-          vertx.executeBlocking(promise ->{
-            String numberf = String.format("%09d", VertxContextPRNG.current(vertx).nextInt(1000000000));
-            promise.complete(numberf);
-          },res -> socket.writeTextMessage((String) res.result()));
-
-          Future<String> number = Future.future(fut-> String.format("%09d", VertxContextPRNG.current(vertx).nextInt(1000000000)));
-          if(number.succeeded()) {
-            socket.writeTextMessage(number.result());
-          }
-          if(socket.writeQueueFull()){
-            nanos=nanos*10;
-          }else{
-            nanos=nanos/2;
-          }
-
-          //socket.writeTextMessage(number);
-
-          try {
-            Thread.sleep(0, nanos);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
-        }
-*/
-
-        //  });
-  //    }
-
-   // });
-
-
-/*
-    vertx.createNetClient().connect(4000, "localhost", sock -> {
-      if (sock.succeeded()) {
-        System.out.println("Connection Succeed!");
-        NetSocket client = sock.result();
-        vertx.setPeriodic(1000, kk -> {
-          String number = String.format("%09d", VertxContextPRNG.current(vertx).nextInt(1000000000));
-          client.write(number,jj -> {
-            if (jj.succeeded())System.out.println(number);
-          });
-        });
-      } else {
-        System.out.println("Connection Failed!");
       }
-    });*/
+    });
+
   }
 }
