@@ -14,7 +14,7 @@ There are 2 services in this repo. The Server and the Client. First, we switch o
 
 Instructions for running each service can be found in their respective folders.
 
-## Personal Considerations
+## Design Considerations
 
 As a DevOps/SRE profile, for the last 3 years, I have been managing applications at scale, over distributed platforms. The development of services such as this challenge has been out of my scope. However, I know or should know the right patterns for designing such WebSocket server. That said, I apologize for my coding skills.
 
@@ -39,3 +39,10 @@ I must confess I set up the working environment after a brief read of the challe
 However, this extension performs differently to the Telnet's way. This client is actually sending an HTTP update request to the server to set up a WebSocket connection. As Vertx toolkit provides the automation of these configurations and provides a set of useful handlers for code simplicity I have gone this way without acknowledging that the use of telnet would be affected as a testing tool. 
 
 For load testing, the chrome extension is not valid. I googled again for a simple tool to generate the load test. At a first glance, nothing seems to be suitable for my use case, I need to create a stream of, randomly generated, 9 digit numbers. So, even if it is out of the scope, I made a Websocket client with Vertx that can be found in this repository.
+
+## Misc.
+
+I must confess that I don't feel confident with all the statements I made. I am more interested in the Kubernetes ecosystem and platform services in general. However, this challenge has given me the aims to improve and refresh some concepts and I took it seriously but for my own satisfaction to understand.
+
+
+

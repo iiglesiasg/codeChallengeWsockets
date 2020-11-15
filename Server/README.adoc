@@ -8,7 +8,8 @@ This application was generated using http://start.vertx.io and I will keep ascii
 
 Vertx starter provides us with a gradle wrapper. So I recommend using it to run building tasks so we all share the same gradle settings.
 
-To package your application, the simplest way is the use of Jonh Engelman's shadow plugin, provided by vertx starter and broadly used, this plugin is responsible for packaging the java classes into a single binary called the FatJar. This is not ideal for security and performance reasons but it is the easiest and fastest way to package a Java microservice.
+To package your application, the simplest way is the use of
+https://github.com/johnrengelman/shadow[Jonh Engelman's shadow plugin], provided by vertx starter and broadly used, this plugin is responsible for packaging the java classes into a single binary called the FatJar. This is not ideal for security and performance reasons but it is the easiest and fastest way to package a Java microservice.
 ```
 ./gradlew clean shadowJar
 
