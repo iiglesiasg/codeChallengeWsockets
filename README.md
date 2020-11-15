@@ -42,7 +42,7 @@ For load testing, the chrome extension is not valid. I googled again for a simpl
 
 ## Misc.
 
-I must confess that I don't feel confident with all the statements I made. I am more interested in the Kubernetes ecosystem and platform services in general. However, this challenge has given me the aims to improve and refresh some concepts and I took it seriously but for my own satisfaction to understand.
+I must confess that I don't feel confident with all the statements I made. I am more interested in the Kubernetes ecosystem and platform services in general. However, this challenge has given me the aims to improve and refresh some concepts and I took it seriously but for my own satisfaction on understanding.
 
 
 
