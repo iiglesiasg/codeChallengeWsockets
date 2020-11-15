@@ -93,11 +93,11 @@ if (file.writeQueueFull()) {
     ws.resume(); // resume websocket
   });
 -----------------
-Now our Server is resilient and aware of data loss. In other words, data loss is no longer a concern from the server side but for the client which should have in mind a circuit-breaker approach to prevent data from been lost.
+Now our Server is resilient and aware of data loss^2^. In other words, data loss is no longer a concern from the server side but for the client which should have in mind a circuit-breaker approach to prevent data from been lost.
 
 Unfortunately, having a file as a backend doesn't let us scale our server horizontally.
 
-^2^ This method should have a fall-back, at least responding to the client(not implemented).
+^2^ Write-to-file method should have a fall-back, at least responding to the client(not implemented).
 
 === Periodic Task
 Every ten seconds the server have to print the computation made during this 10seconds slot. Again, Vertx has its tool for scheduled tasks.
