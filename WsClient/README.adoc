@@ -34,7 +34,7 @@ client.webSocket("/", sock -> {
         ...
 -----------------
 === Infinite loop in Vertx
-Vertx is not intended to execute blocking code. It always expects an event as input. Since the Vertx Periodic task can only be scheduled in milliseconds magnitudes and as we want to be in nanoseconds magnitudes, we have to make a workaround.
+Vertx is not intended to execute blocking code. It always expects an event as input. Since the Vertx Periodic task can only be scheduled in milliseconds magnitudes and as we want to be in nanoseconds magnitudes, we have to find a workaround.
 Executing an infinite loop in Vertx requires us to encapsulate the code as a blocking piece of code. Notice that this is intended to be a massive load generator. As we already know that the server will pause the socket for backpressure, from the client-side perspective the socket writing queue will also get eventually full. In a real case scenario, a circuit-breaker will be recommended.
 [source,java]
 -----------------
@@ -52,6 +52,7 @@ Vertx will warn you about Threads that get blocked for more than 2s. executeBloc
 
 == What we expect
 I will describe how I've been testing the service, but you can do it your way. Actually while developing I have been using JetBrains IntelliJ.
+
 Start the server
 ```
 $ java -jar Server/build/libs/Server-1.0.0-SNAPSHOT-fat.jar
