@@ -48,3 +48,47 @@ vertx.executeBlocking(promise -> {
       ).onComplete(number -> socket.writeTextMessage(number.result()));
     }
 -----------------
+Actually Vertx while warn you about Threads that get blocked for more that 2s. executeBlocking is the exception, it will start warning after 50s.
+== What we expect
+I will describe how I've been testing the service, but you can do it your way. Actually while developing I have been using JetBrains IntelliJ.
+Start the server
+```
+$ java -jar Server/build/libs/Server-1.0.0-SNAPSHOT-fat.jar
+File numbers.log deleted
+File Created
+Server is now listening on port 4000
+Received 0 unique numbers, 0 duplicates. Unique Total: 0 Connections: 0
+Received 0 unique numbers, 0 duplicates. Unique Total: 0 Connections: 0
+```
+Start the Clients
+```
+$ vertx run .\src\main\java\com\nrelic\MainVerticle.java --instances 5
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+Connected socket
+Connected socket
+Connected socket
+Connected socket
+Connected socket
+```
+Dont worry about the SLF4J errors as is vertx cli cluster matters that doesnt bother us.
+
+Come back to the server console
+```
+...
+BackPressure
+BackPressure
+BackPressure
+BackPressure
+BackPressure
+BackPressure
+Received 301389 unique numbers, 77 duplicates. Unique Total: 367390 Connections: 5
+```
+I print each time a Backpressure event occurs. It's telling the client to hold on.
+
+What if there is no write to file? Just commenting that piece of code:
+image:../assets/No-file.png[alt="not bad."]
+Over a million an a half...
+
+As expected, even if there could be a bunch of performance tunes, writing to the file is the slowest task and so is the troughput of the microservice.
