@@ -93,7 +93,7 @@ if (file.writeQueueFull()) {
     ws.resume(); // resume websocket
   });
 -----------------
-Now our Server is resilient and aware of data loss^2^. In other words, data loss is no longer a concern from the server side but for the client which should have in mind a circuit-breaker approach to prevent data from been lost.
+Now our Server is resilient and aware of data loss^2^. In other words, data loss is no longer a concern from the server side but for the client which should have in mind a circuit-breaker approach to prevent data from being lost.
 
 Unfortunately, having a file as a backend doesn't let us scale our server horizontally.
 
