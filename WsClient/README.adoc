@@ -94,4 +94,4 @@ image:../assets/No-file.png[alt="remove file.write call"]
 
 Over a million and a half...
 
-As expected, even if there could be a bunch of performance tunes, writing to the file is the slowest task and so is the troughput of the *microservice*.
+As expected, even if there could be a bunch of performance tunnings, writing to the file is the slowest task and so is the throughput of the *microservice*.
