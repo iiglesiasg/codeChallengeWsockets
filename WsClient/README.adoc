@@ -22,7 +22,7 @@ vertx run src/main/java/com/nrelic/MainVerticle.java --instances 5
 ```
 
 == WsClient Design
-Straight forward. Create basic HTTP client. Request websocket connection.
+Straight forward. Create a basic HTTP client. Request WebSocket connection.
 [source,java]
 -----------------
 HttpClient client = vertx.createHttpClient(options);
@@ -34,8 +34,8 @@ client.webSocket("/", sock -> {
         ...
 -----------------
 === Infinite loop in Vertx
-Vertx it is not intended to execute blocking code. It always expects an event as input. Since the Vertx Periodic task can only be scheduled in milliseconds magnitudes and as we want to be in nanoseconds magnitudes, we have to make a workaround.
-Executing an infinite loop in Vertx require us to encapsulate the code in a special manner. Notice that this is intended to be a massive load generator. As we already know that the server will pause the socket for backpressure, from the client side prespective the socket writing queue will also get eventually full. On a real case scenario a circuit-breaker will be recommended.
+Vertx is not intended to execute blocking code. It always expects an event as input. Since the Vertx Periodic task can only be scheduled in milliseconds magnitudes and as we want to be in nanoseconds magnitudes, we have to make a workaround.
+Executing an infinite loop in Vertx requires us to encapsulate the code as a blocking piece of code. Notice that this is intended to be a massive load generator. As we already know that the server will pause the socket for backpressure, from the client-side perspective the socket writing queue will also get eventually full. In a real case scenario, a circuit-breaker will be recommended.
 [source,java]
 -----------------
 // As there is no input stream but an infinite loop we have to cheat vertX with a blocking piece of code.
