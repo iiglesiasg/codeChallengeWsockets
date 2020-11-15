@@ -37,10 +37,12 @@ public class MainVerticle extends AbstractVerticle {
         // As there is no input stream but an infinite loop we have to cheat vertX with a blocking piece of code.
         vertx.executeBlocking(promise -> {
           while (true) {
-            // Generate ramdom 9 digits with left pad
-            String number = String.format("%09d", VertxContextPRNG.current(vertx).nextInt(1000000000));
             // Only send if the queue is not full.
-            if (!socket.writeQueueFull()) socket.writeTextMessage(number);
+            if (!socket.writeQueueFull()) {
+              Future.<String>future(f -> // Generate ramdom 9 digits with left pad
+                f.complete(String.format("%09d", VertxContextPRNG.current(vertx).nextInt(1000000000)))
+              ).onComplete(number -> socket.writeTextMessage(number.result()));
+            }
           }
         }, res -> System.out.println("Fin"));
 
