@@ -82,7 +82,7 @@ With a small impact on adding new elements to the list, as they are stored in a 
 ^1^ Line ending: The challenge emphasizes the line ending issue. I have not implemented it as Vertx's handlers abstracts this logic. As mentioned on repo's readme, I have not taken the Telnet path for WebSockets, but the HTTP update connection request.
 
 === Non-Blocking and BackPressure
-For each incoming message, I need to validate and process it. I need those validations to be run in a non-blocking manner so the thread can continue processing incoming WebSocket messages. Once the validations are done, if it proceeds, the Thread will be told to trigger the write-to-file async event. This method should have a fall-back, at least responding to the client(not implemented).
+For each incoming message, I need to validate and process it. I need those validations to be run in a non-blocking manner so the thread can continue processing incoming WebSocket messages. Once the validations are done, if it proceeds, the Thread will be told to trigger the write-to-file async event^2^.
 
 Writing to a file is expected to be much slower than the WebSocket throughput, and that will cause the WritingQueue to become full with a catastrophic OOM and the consequent data-loss. To avoid that we need to implement the pump paradigm, also known as back-pressure.
 [source,java]
@@ -96,6 +96,8 @@ if (file.writeQueueFull()) {
 Now our Server is resilient and aware of data loss. In other words, data loss is no longer a concern from the server side but for the client which should have in mind a circuit-breaker approach to prevent data from been lost.
 
 Unfortunately, having a file as a backend doesn't let us scale our server horizontally.
+
+^2^ This method should have a fall-back, at least responding to the client(not implemented).
 
 === Periodic Task
 Every ten seconds the server have to print the computation made during this 10seconds slot. Again, Vertx has its tool for scheduled tasks.
