@@ -49,6 +49,7 @@ vertx.executeBlocking(promise -> {
     }
 -----------------
 Actually Vertx while warn you about Threads that get blocked for more that 2s. executeBlocking is the exception, it will start warning after 50s.
+
 == What we expect
 I will describe how I've been testing the service, but you can do it your way. Actually while developing I have been using JetBrains IntelliJ.
 Start the server
