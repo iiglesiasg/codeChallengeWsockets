@@ -12,7 +12,7 @@ Even if it is out of the scope I made a WebSocket client for load testing the se
 
 There are 2 services in this repo. The Server and the Client. First, we switch on the Server, and then we can start up the clients. 
 
-Instructions for running each service can be found in their respective folders.
+Instructions for running each service can be found in their respective folders. Each folder contains his own README with it's explanation.
 
 ## Design Considerations
 
