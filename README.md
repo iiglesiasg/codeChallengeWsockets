@@ -1,6 +1,6 @@
 # Code Challenge
 
-This Repository contains the code for running the [Code Challenge]() specified by the interviewers. 
+This Repository contains the code for running the [Code Challenge](assets/challenge.pdf) specified by the interviewers. 
 
 ## Overview
 
