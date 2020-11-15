@@ -78,7 +78,7 @@ There is another consideration for choosing the right data structure. The search
 
 With a small impact on adding new elements to the list, as they are stored in a sorted manner, the search response is highly improved.
 
-^1^ Line ending: The challenge emphasize the line ending issue. I have not implemented it as vertx handlers abstracts this logic. As mentioned on repo's readme, I have not taken the Telnet path for websockets, but the HTTP update connection request.
+^1^ Line ending: The challenge emphasizes the line ending issue. I have not implemented it as Vertx's handlers abstracts this logic. As mentioned on repo's readme, I have not taken the Telnet path for WebSockets, but the HTTP update connection request.
 
 === Non-Blocking and BackPressure
 For each incoming message, I need to validate and process it. I need those validations to be run in a non-blocking manner so the thread can continue processing incoming WebSocket messages. Once the validation is done, if it proceeds, the Thread will be told to trigger the next async function which is writing to the file over the previously opened File-WriteStream.
