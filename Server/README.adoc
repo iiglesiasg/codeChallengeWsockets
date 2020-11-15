@@ -74,7 +74,7 @@ Something as simple as these lines should be enough
 === Data Structures
 For the challenge's "business logic" I need to store the digits inside a data structure. The digits came as a 9 character string with 0's as left pad. Otherwise, the connection is closed. Computationally the fastest comparator is comparing integers, so if I want to compare if arriving digits have been processed before I better store the digits as Integers. Moreover, 9 digits are many possible numbers so I need a list that grows in size dynamically, at least is something I would not like to tune.
 
-There is another consideration for choosing the right data structure. Searching algorithm. Usually, a linear search is enough for a good performance, but in this challenge, the number of stored digits can grow up to millions, and a linear search over 70M is non-sense, with a significant impact on the performance. That's why I need a data structure that allows me to do a binary search. Binary search works over an ordered list, and in Java 11 the data structure that fills my requirements seems te be a *SortedSet<Integer>*
+There is another consideration for choosing the right data structure. The searching algorithm. Usually, a linear search is enough for a good performance, but in this challenge, the number of stored digits can grow up to millions, and a linear search over 70M is non-sense, with a significant impact on the performance. That's why I need a data structure that allows me to do a binary search. Binary search works over an ordered list, and in Java 11 the data structure that fills my requirements seems te be a *SortedSet<Integer>*
 
 With a small impact on adding new elements to the list, as they are stored in a sorted manner, the search response is highly improved.
 
