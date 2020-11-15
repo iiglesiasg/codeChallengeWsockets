@@ -82,7 +82,7 @@ With a small impact on adding new elements to the list, as they are stored in a 
 ^1^ Line ending: The challenge emphasizes the line ending issue. I have not implemented it as Vertx's handlers abstracts this logic. As mentioned on repo's readme, I have not taken the Telnet path for WebSockets, but the HTTP update connection request.
 
 === Non-Blocking and BackPressure
-For each incoming message, I need to validate and process it. I need those validations to be run in a non-blocking manner so the thread can continue processing incoming WebSocket messages. Once the validations are done, if it proceeds, the Thread will be told to trigger the write-to-file async event^2^.
+For each incoming message, I need to validate and process it. I need those validations to be run in a non-blocking manner so the thread can continue processing incoming WebSocket messages. Once the validations are done, if it proceeds, the Thread will be told to trigger the write-to-file async event.
 
 Writing to a file is expected to be much slower than the WebSocket throughput, and that will cause the WritingQueue to become full with a catastrophic OOM and the consequent data-loss. To avoid that we need to implement the pump paradigm, also known as back-pressure.
 [source,java]
